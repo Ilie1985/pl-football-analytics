@@ -1,0 +1,17 @@
+# Virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Secrets
+.env
+
+# Data (keep raw out of Git)
+data/raw/
+data/processed/
+
+# OS / editor
+.DS_Store
+.vscode/
