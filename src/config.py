@@ -9,5 +9,6 @@ COMPETITION_CODE = "PL"
 
 if not API_TOKEN:
     raise RuntimeError(
-        "Missing FOOTBALL_DATA_TOKEN in .env file"
+        "Missing FOOTBALL_DATA_TOKEN. Create a .env file with:\n"
+        "FOOTBALL_DATA_TOKEN=your_token_here"
     )
