@@ -1,239 +1,156 @@
 ⚽ Premier League Multi-Season Analytics & Match Prediction
-📌 Project Overview
 
-This project builds a complete football analytics pipeline using Premier League data across multiple seasons.
+End-to-end football analytics project using API data, rolling feature engineering, and predictive modelling.
 
-It demonstrates:
+This project explores Premier League match data across multiple seasons to understand performance trends and build models that attempt to predict match outcomes.
 
-API data extraction
+The goal of the project was to understand:
 
-Data cleaning & transformation
+How team form affects match results
 
-Exploratory Data Analysis (EDA)
+Whether recent performance metrics can help predict outcomes
 
-Feature engineering using rolling team performance
-
-Multi-class and binary predictive modelling
-
-Model evaluation and interpretation
-
-The project follows a real-world data science workflow from raw data ingestion to predictive modelling.
-
-📂 Data Source
-
-Data was collected using the football-data.org API.
-
-Seasons included:
-
-2023
-
-2024
-
-2025
-
-Current season (ongoing)
-
-Data extracted:
-
-Match results
-
-League standings
-
-Top scorers
-
-🛠 Project Structure
-PL-football-analytics/
-│
-├── data/
-│ ├── raw/ # Raw JSON from API
-│ └── processed/ # Cleaned CSV datasets
-│
-├── notebooks/
-│ └── 03_eda_visuals.ipynb
-│
-├── src/
-│ ├── api_client.py
-│ ├── extract.py
-│ └── clean.py
-│
-├── requirements.txt
-└── README.md
-🔄 Data Pipeline
-1️⃣ Extraction
-
-Connected to football-data.org API
-
-Pulled multi-season JSON data
-
-Saved raw files for reproducibility
-
-2️⃣ Cleaning & Transformation
-
-Normalized JSON structure
-
-Extracted:
-
-Full-time home/away goals
-
-Match result (H / D / A)
-
-Goal difference
-
-Total goals
-
-Created processed CSV files
-
-3️⃣ Feature Engineering
-
-Created rolling pre-match features:
-
-home_avg_scored
-
-home_avg_conceded
-
-away_avg_scored
-
-away_avg_conceded
-
-Derived matchup features:
-
-home_attack_strength
-
-away_attack_strength
-
-All rolling features use shift() to avoid data leakage.
-
-Chronological train-test split was used to simulate real-world forecasting.
+How accurate simple statistical models can be when applied to football data
 
 📊 Exploratory Data Analysis
 
-Key findings:
+Before building predictive models, the first step was to understand patterns in the data.
 
-Home Advantage
+Home / Draw / Away Distribution
 
-Home wins consistently represent ~41–46% of results.
+This chart shows how match results are distributed across seasons.
 
-Strong structural home advantage across seasons.
+![Home Draw Away Distribution](reports/figures/result_distribution.png)
 
-Draw Trends
+What this shows
 
-Draw percentage increased from 21.6% (2023) to 26.3% (recent seasons).
+Home wins consistently represent the largest share of results
 
-Goal Trends
+Away wins fluctuate depending on season competitiveness
 
-Average goals per match declined:
+Draw frequency increased slightly in more recent seasons
 
-2023: 3.28
+This confirms the well-known home advantage effect in football.
 
-2024: 2.93
+Average Goals Per Match
+![Average Goals Per Season](reports/figures/avg_goals_per_season.png)
 
-2025: 2.79
+Observations
 
-Suggests increasingly tight and competitive matches.
+Goal scoring decreased over the seasons analysed:
+
+Season	Avg Goals
+2023	3.28
+2024	2.93
+2025	2.79
+
+This suggests matches are becoming more defensively balanced.
 
 🤖 Predictive Modelling
-Multi-Class Model (H / D / A)
 
-Model: Multinomial Logistic Regression
-Features: Rolling goal performance metrics
-Split: Chronological (80% train, 20% test)
+After analysing trends, the next goal was to determine whether recent team performance could predict match outcomes.
 
-Accuracy: 42.9%
-Baseline: 35.1%
+The challenge in sports prediction is that football matches contain a lot of randomness.
 
-Draw outcomes were difficult to predict — consistent with known structural uncertainty in football.
+Instead of predicting final scores, we focused on predicting match outcomes.
 
-Random Forest model did not improve performance significantly.
+Feature Engineering
 
-Balanced logistic regression improved class fairness but slightly reduced overall accuracy.
+To simulate pre-match prediction, we created rolling statistics based on previous matches.
 
-Binary Model (Home Win vs Not Home Win)
-
-Simplified prediction problem:
-
-1 = Home Win
-
-0 = Not Home Win
-
-Binary Logistic Regression Accuracy: 62.5%
-
-Baseline: ~57%
-
-This demonstrates meaningful predictive signal in rolling performance metrics.
-
-📈 Feature Importance (Binary Model)
-
-Most influential features:
-
-Positive Impact on Home Win
+Key features include:
 
 home_avg_scored
-
+home_avg_conceded
+away_avg_scored
 away_avg_conceded
 
-Negative Impact on Home Win
+These were calculated using rolling averages from previous matches.
 
-home_avg_conceded
+Example concept used in the code:
 
-away_avg_scored
+finished.groupby("home_team")["ft_home"].transform(
+    lambda x: x.shift().rolling(5).mean()
+)
 
-Interpretation:
-Teams that score more and concede less in recent matches have higher probability of winning at home.
+The shift() operation prevents data leakage, ensuring the model only uses information available before the match occurs.
 
-📦 Technologies Used
+Binary Model Feature Importance
+![Feature Importance](reports/figures/feature_importance.png)
+
+Interpretation
+
+The most important predictors of a home win were:
+
+Positive impact
+
+High recent home team scoring
+
+High away team goals conceded
+
+Negative impact
+
+High home team goals conceded
+
+High away team scoring form
+
+This aligns well with football intuition.
+
+Teams that score more and concede less tend to win more matches.
+
+📈 Model Performance
+Model	Accuracy
+Logistic Regression (3-class)	42.9%
+Balanced Logistic Regression	41.7%
+Random Forest	39.8%
+Binary Logistic Regression	62.5%
+
+Binary prediction simplified the problem and produced stronger results.
+
+🧠 What I Wanted To Understand
+
+This project was created to explore several questions:
+
+Can simple statistical features capture team strength and form?
+
+How predictable are football match outcomes?
+
+Can rolling performance metrics provide predictive signal?
+
+The results suggest that while football remains difficult to predict, recent team performance contains useful information, especially when predicting home wins vs non-home wins.
+
+⚙ Technologies Used
 
 Python
 
 pandas
 
-requests
-
 matplotlib
 
 scikit-learn
+
+requests
 
 Jupyter Notebook
 
 VS Code
 
-Git & GitHub
-
-🔬 Key Modelling Practices Demonstrated
-
-Rolling window feature engineering
-
-Avoidance of data leakage
-
-Chronological train-test split
-
-Class imbalance handling
-
-Model comparison (Logistic vs Random Forest)
-
-Baseline benchmarking
-
-Coefficient interpretation
+Git / GitHub
 
 🚀 Future Improvements
 
-Potential extensions:
+Potential extensions include:
 
-Include betting odds as market expectations
+Adding betting odds as predictive features
 
-Add rolling points-per-game features
+Incorporating Elo ratings
 
-Use Elo ratings
+Using gradient boosting models
 
-Try gradient boosting models
-
-Hyperparameter tuning
-
-Deploy as a Streamlit dashboard
+Building a dashboard for interactive exploration
 
 🏁 Conclusion
 
-This project demonstrates a complete football analytics pipeline:
+This project demonstrates a full data science workflow applied to sports analytics, from data extraction and cleaning to predictive modelling.
 
-From raw API ingestion to interpretable predictive modelling.
-
-While match outcome prediction remains inherently uncertain — especially for draw results — rolling performance indicators provide measurable predictive signal, particularly for home win forecasting
+Although football outcomes remain highly uncertain, rolling performance metrics can provide meaningful predictive insight, particularly for forecasting home wins.
